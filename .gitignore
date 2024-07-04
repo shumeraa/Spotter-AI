@@ -1,1 +1,4 @@
 .venv/
+Data/
+runs/
+yolov8m-pose.pt
