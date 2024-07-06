@@ -27,7 +27,6 @@ def calculate_angle(p1, p2, p3):
 cap = cv2.VideoCapture("Data/KneeCave.mp4")
 
 while cap.isOpened():
-
     ret, frame = cap.read()
     if not ret:
         break
@@ -41,7 +40,6 @@ while cap.isOpened():
     right_hip_index = 12
     right_knee_index = 14
     right_ankle_index = 16
-    left_shoulder_index = 5  # Not used in this snippet
 
     # Extract the coordinates for the right hip, knee, and ankle keypoints
     right_hip = np.squeeze(keypoints[:, right_hip_index, :2])
@@ -50,16 +48,12 @@ while cap.isOpened():
 
     knee_angle = calculate_angle(right_hip, right_knee, right_ankle)
 
-    # Ensure the points are tuples of integers
-    right_ankle_int = tuple(map(int, right_ankle))
-    right_knee_int = tuple(map(int, right_knee))
-    right_hip_int = tuple(map(int, right_hip))
-
-    # Display the calculated knee angle on the frame
     # Convert normalized coordinates to pixel coordinates
     right_hip = (right_hip * np.array([frame.shape[1], frame.shape[0]])).astype(int)
     right_knee = (right_knee * np.array([frame.shape[1], frame.shape[0]])).astype(int)
     right_ankle = (right_ankle * np.array([frame.shape[1], frame.shape[0]])).astype(int)
+
+    # Display the calculated knee angle on the frame
     cv2.putText(
         annotated_frame,
         f"Knee Angle: {knee_angle:.2f}",
@@ -73,12 +67,10 @@ while cap.isOpened():
     print(f"Knee Angle: {knee_angle:.2f}")
 
     # Display the frame with the annotated angle in a window
-    cv2.imshow("Example", frame)
-    # plt.imshow(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
-    # plt.show()
+    cv2.imshow("Example", annotated_frame)
 
-    # Break the loop if 'q' is pressed
-    if cv2.waitKey(0) & 0xFF == ord("q"):
+    # Introduce a delay between frames and break the loop if 'q' is pressed
+    if cv2.waitKey(30) & 0xFF == ord("q"):
         break
 
 # Release the video capture object and close all OpenCV windows
