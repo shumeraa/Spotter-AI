@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # load a pretrained YOLOv8m model
-model = YOLO("yolov8m-pose.pt")
+model = YOLO("yolov8n-pose.pt")
 
 
 # Define a function to calculate the angle between three points
@@ -23,19 +23,7 @@ def calculate_angle(p1, p2, p3):
     return angle_deg
 
 
-# Open the video stream from a file
-cap = cv2.VideoCapture("Data/KneeCave.mp4")
-
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
-
-    # Use a model to detect keypoints in the frame and convert them to numpy array
-    results = model(frame)
-    annotated_frame = results[0].plot()
-    keypoints = results[0].keypoints.xyn.cpu().numpy()
-
+def plotKneeAngle(frame, keypoints):
     # Indices for right hip, knee, and ankle keypoints
     right_hip_index = 12
     right_knee_index = 14
@@ -46,7 +34,21 @@ while cap.isOpened():
     right_knee = np.squeeze(keypoints[:, right_knee_index, :2])
     right_ankle = np.squeeze(keypoints[:, right_ankle_index, :2])
 
+    # assert right_hip.shape == (2,)
+    # assert right_knee.shape == (2,)
+    # assert right_ankle.shape == (2,)
+    
+    if right_hip.shape != (2,) or right_knee.shape != (2,) or right_ankle.shape != (2,):
+        print("Some keypoints are missing, cannot calculate the angle")
+        return False
+    
+    # if np.array_equal(right_hip, [0, 0]) or np.array_equal(right_knee, [0, 0]) or np.array_equal(right_ankle, [0, 0]):
+    #     print("One or more keypoints are missing")
+    #     count += 1
+    #     return
+
     knee_angle = calculate_angle(right_hip, right_knee, right_ankle)
+    print(f"Knee Angle: {knee_angle}")
 
     # Convert normalized coordinates to pixel coordinates
     right_hip = (right_hip * np.array([frame.shape[1], frame.shape[0]])).astype(int)
@@ -65,14 +67,36 @@ while cap.isOpened():
         cv2.LINE_AA,
     )
     print(f"Knee Angle: {knee_angle:.2f}")
+    return True
+
+
+# Open the video stream from a file
+cap = cv2.VideoCapture("Data\SquatVideo.mp4")
+cv2.namedWindow("Example", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("Example", 1280, 720)
+count = 0
+
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    # Use a model to detect keypoints in the frame and convert them to numpy array
+    results = model(frame)
+    annotated_frame = results[0].plot()
+    keypoints = results[0].keypoints.xyn.cpu().numpy()
+
+    if not plotKneeAngle(annotated_frame, keypoints):
+        count += 1
 
     # Display the frame with the annotated angle in a window
-    cv2.imshow("Example", annotated_frame)
+    #cv2.imshow("Example", annotated_frame)
 
     # Introduce a delay between frames and break the loop if 'q' is pressed
-    if cv2.waitKey(30) & 0xFF == ord("q"):
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
 # Release the video capture object and close all OpenCV windows
+print(f"Number of frames with missing keypoints: {count}")
 cap.release()
 cv2.destroyAllWindows()
