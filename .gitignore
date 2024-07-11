@@ -3,3 +3,4 @@ Data/
 runs/
 yolov8m-pose.pt
 yolov8n-pose.pt
+__pycache__
