@@ -1,0 +1,46 @@
+# file_monitor.py
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+import os
+import time
+from pygame import mixer
+
+
+class MyHandler(FileSystemEventHandler):
+    def on_any_event(self, event):
+        print(event.event_type, event.src_path)
+
+    def on_created(self, event):
+        print("on_created", event.src_path)
+        if event.src_path.lower().endswith(".mp3"):
+            print("MP3 file detected:", event.src_path)
+            mixer.init()
+            mixer.music.load(os.path.abspath(event.src_path))
+            mixer.music.play()
+            while mixer.music.get_busy():  # wait for music to finish playing
+                time.sleep(1)
+
+
+observer = None
+
+
+def start_monitoring(path="Recordings"):
+    global observer
+    event_handler = MyHandler()
+    observer = Observer()
+    observer.schedule(event_handler, path=path, recursive=False)
+    observer.start()
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        stop_monitoring()
+
+
+def stop_monitoring():
+    global observer
+    if observer:
+        observer.stop()
+        observer.join()
+        print("Monitoring stopped.")

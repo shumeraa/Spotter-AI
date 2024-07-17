@@ -110,12 +110,14 @@ def getKneeAngle(frame, keypoints, left):
 
 
 def plotKneeAngle(frame, keypoints, knee_angle, left):
+    xPixels = 0
     if left:
         # Extract the coordinates for the left knee keypoint
         knee = np.squeeze(keypoints[:, left_knee_index, :2])
     else:
         # Extract the coordinates for the right knee keypoint
         knee = np.squeeze(keypoints[:, right_knee_index, :2])
+        xPixels = 130
 
     # Convert normalized coordinates to pixel coordinates
     knee_pixel = knee * np.array([frame.shape[1], frame.shape[0]]).astype(int)
@@ -124,10 +126,10 @@ def plotKneeAngle(frame, keypoints, knee_angle, left):
     cv2.putText(
         frame,
         f"Knee Angle: {knee_angle:.2f}",
-        (int(knee_pixel[0]), int(knee_pixel[1]) - 10),
+        (int(knee_pixel[0]) - xPixels, int(knee_pixel[1]) - 10),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.5,
-        (255, 255, 255),
+        (0, 255, 0),
         2,
         cv2.LINE_AA,
     )

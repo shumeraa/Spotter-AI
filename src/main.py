@@ -1,4 +1,5 @@
 from ultralytics import YOLO
+import monitorAudio
 import cv2
 from analyzeSquat import (
     getKneeAngle,
@@ -7,14 +8,20 @@ from analyzeSquat import (
     plotRepCount,
     squatIsAtTheTop,
 )
+import threading
 
 # load a pretrained YOLOv8m model
 model = YOLO("yolov8m-pose.pt")
 
+path_to_monitor = r"Recordings"
+monitoring_thread = threading.Thread(
+    target=monitorAudio.start_monitoring, args=(path_to_monitor,)
+)
+monitoring_thread.start()
 
 # Open the video stream from a file
-cap = cv2.VideoCapture(r"Data\KneeCave.mp4")
-#cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(r"Data\Squat.mp4")
+# cap = cv2.VideoCapture(0)
 cv2.namedWindow("Example", cv2.WINDOW_NORMAL)
 cv2.resizeWindow("Example", 1280, 720)
 squatWasBelowParallel = False
@@ -80,5 +87,6 @@ while cap.isOpened():
 
 # Release the video capture object and close all OpenCV windows
 print(f"Number of frames with missing keypoints: {count}")
+monitorAudio.stop_monitoring()
 cap.release()
 cv2.destroyAllWindows()
