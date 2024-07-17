@@ -9,6 +9,7 @@ from analyzeSquat import (
     squatIsAtTheTop,
 )
 import threading
+from speak import speak
 
 # load a pretrained YOLOv8m model
 model = YOLO("yolov8m-pose.pt")
@@ -60,6 +61,7 @@ while cap.isOpened():
                 squatComingBackUp = True
             elif squatComingBackUp and squatIsAtTheTop(keypoints) is True:
                 squatRep += 1
+                speak(squatRep)
                 squatComingBackUp = False
 
             squatWasBelowParallel = squatIsBelowParallel(keypoints)
@@ -88,5 +90,6 @@ while cap.isOpened():
 # Release the video capture object and close all OpenCV windows
 print(f"Number of frames with missing keypoints: {count}")
 monitorAudio.stop_monitoring()
+monitoring_thread.join()
 cap.release()
 cv2.destroyAllWindows()
