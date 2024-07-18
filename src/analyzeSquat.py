@@ -105,7 +105,7 @@ def getKneeAngle(frame, keypoints, left):
         return None
 
     knee_angle = calculate_angle(hip, knee, ankle)
-    print(f"Knee Angle: {knee_angle}")
+    # print(f"Knee Angle: {knee_angle}")
     return knee_angle
 
 
@@ -133,7 +133,7 @@ def plotKneeAngle(frame, keypoints, knee_angle, left):
         2,
         cv2.LINE_AA,
     )
-    print(f"Knee Angle: {knee_angle:.2f}")
+    # print(f"Knee Angle: {knee_angle:.2f}")
     return True
 
 
