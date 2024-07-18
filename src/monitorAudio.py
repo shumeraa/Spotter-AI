@@ -1,4 +1,4 @@
-import threading
+from multiprocessing import Process, Event
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import os
@@ -15,7 +15,7 @@ class MyHandler(FileSystemEventHandler):
         print("on_created", event.src_path)
         if event.src_path.lower().endswith(".mp3"):
             print("MP3 file detected:", event.src_path)
-            time.sleep(1)  # Wait a second to ensure the file is fully written
+            time.sleep(2)  # Wait a second to ensure the file is fully written
             mixer.init()
             try:
                 mixer.music.load(os.path.abspath(event.src_path))
@@ -27,7 +27,7 @@ class MyHandler(FileSystemEventHandler):
 
 
 observer = None
-stop_event = threading.Event()  # Event to control the stopping of the loop
+stop_event = Event()  # Event to control the stopping of the loop
 
 
 def start_monitoring(path="Recordings"):

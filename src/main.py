@@ -8,17 +8,34 @@ from analyzeSquat import (
     plotRepCount,
     squatIsAtTheTop,
 )
-import threading
-from speak import speak
+import multiprocessing
+from callLLM import callLLM
+
+
+def llmCall_worker(input_queue, output_queue):
+    while True:
+        input_string = input_queue.get()
+        if input_string is None:  # Sentinel value to signal the end of the process
+            break
+        callLLM(input_string)
+        output_queue.put(f"Processed: {input_string}")
+
 
 # load a pretrained YOLOv8m model
 model = YOLO("yolov8m-pose.pt")
 
 path_to_monitor = r"Recordings"
-monitoring_thread = threading.Thread(
+monitoring_process = multiprocessing.Process(
     target=monitorAudio.start_monitoring, args=(path_to_monitor,)
 )
-monitoring_thread.start()
+monitoring_process.start()
+
+input_queue = multiprocessing.Queue()
+output_queue = multiprocessing.Queue()
+llmCall_process = multiprocessing.Process(
+    target=llmCall_worker, args=(input_queue, output_queue)
+)
+llmCall_process.start()
 
 # Open the video stream from a file
 cap = cv2.VideoCapture(r"Data\Squat.mp4")
@@ -61,7 +78,7 @@ while cap.isOpened():
                 squatComingBackUp = True
             elif squatComingBackUp and squatIsAtTheTop(keypoints) is True:
                 squatRep += 1
-                speak(squatRep)
+                input_queue.put(squatRep)
                 squatComingBackUp = False
 
             squatWasBelowParallel = squatIsBelowParallel(keypoints)
@@ -89,7 +106,9 @@ while cap.isOpened():
 
 # Release the video capture object and close all OpenCV windows
 print(f"Number of frames with missing keypoints: {count}")
+input_queue.put(None)
+llmCall_process.join()
 monitorAudio.stop_monitoring()
-monitoring_thread.join()
+monitoring_process.join()
 cap.release()
 cv2.destroyAllWindows()
