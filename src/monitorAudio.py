@@ -4,18 +4,19 @@ from watchdog.events import FileSystemEventHandler
 import os
 import time
 from pygame import mixer
+import callLLM
 
 
 class MyHandler(FileSystemEventHandler):
     def on_any_event(self, event):
         print(event.event_type, event.src_path)
-        print("SOMETHING HAPPENED")
+        print("Watchdog detected an event")
 
     def on_created(self, event):
         print("on_created", event.src_path)
         if event.src_path.lower().endswith(".mp3"):
             print("MP3 file detected:", event.src_path)
-            time.sleep(2)  # Wait a second to ensure the file is fully written
+            time.sleep(1)  # Wait a second to ensure the file is fully written
             mixer.init()
             try:
                 mixer.music.load(os.path.abspath(event.src_path))
@@ -31,6 +32,7 @@ stop_event = Event()  # Event to control the stopping of the loop
 
 
 def start_monitoring(path="Recordings"):
+    print("Monitoring started!")
     global observer
     event_handler = MyHandler()
     observer = Observer()

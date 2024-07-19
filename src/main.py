@@ -11,20 +11,21 @@ from analyzeSquat import (
 import multiprocessing
 from callLLM import callLLM
 
-
+# need to delete all files in recordings folder before running the code
 def llmCall_worker(input_queue, output_queue):
     while True:
         input_string = input_queue.get()
         if input_string is None:  # Sentinel value to signal the end of the process
             break
         callLLM(input_string)
+        print("LLM called")
         output_queue.put(f"Processed: {input_string}")
 
 
 if __name__ == "__main__":
     try:
         # load a pretrained YOLOv8m model
-        model = YOLO("yolov8m-pose.pt")
+        model = YOLO("yolov8n-pose.pt")
 
         path_to_monitor = r"Recordings"
         monitoring_process = multiprocessing.Process(
@@ -71,7 +72,7 @@ if __name__ == "__main__":
                     # get the initial state of the squat
                     onFirstFrame = False
                     squatWasBelowParallel = squatIsBelowParallel(keypoints)
-                if not onFirstFrame:
+                elif not onFirstFrame:
                     # check if the squat has successfully gone below parallel and is coming back up
                     if (
                         squatWasBelowParallel is True
