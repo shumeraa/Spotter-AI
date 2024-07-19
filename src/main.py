@@ -11,6 +11,7 @@ from analyzeSquat import (
 import multiprocessing
 from callLLM import callLLM
 
+
 # need to delete all files in recordings folder before running the code
 def llmCall_worker(input_queue, output_queue):
     while True:
@@ -22,16 +23,12 @@ def llmCall_worker(input_queue, output_queue):
         output_queue.put(f"Processed: {input_string}")
 
 
+recordingsFolder = r"Recordings"
+
 if __name__ == "__main__":
     try:
         # load a pretrained YOLOv8m model
-        model = YOLO("yolov8n-pose.pt")
-
-        path_to_monitor = r"Recordings"
-        monitoring_process = multiprocessing.Process(
-            target=monitorAudio.start_monitoring, args=(path_to_monitor,)
-        )
-        monitoring_process.start()
+        model = YOLO("yolov8m-pose.pt")
 
         input_queue = multiprocessing.Queue()
         output_queue = multiprocessing.Queue()
@@ -41,8 +38,8 @@ if __name__ == "__main__":
         llmCall_process.start()
 
         # Open the video stream from a file
-        cap = cv2.VideoCapture(r"Data\Squat.mp4")
-        # cap = cv2.VideoCapture(0)
+        # cap = cv2.VideoCapture(r"Data\Squat.mp4")
+        cap = cv2.VideoCapture(0)
         cv2.namedWindow("Example", cv2.WINDOW_NORMAL)
         cv2.resizeWindow("Example", 1280, 720)
         squatWasBelowParallel = False
@@ -112,9 +109,8 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"An error occurred: {e}")
     finally:
+        print("stopping")
         input_queue.put(None)
         llmCall_process.join()
-        monitorAudio.stop_monitoring()
-        monitoring_process.join()
         cap.release()
         cv2.destroyAllWindows()
