@@ -1,5 +1,4 @@
 from ultralytics import YOLO
-import monitorAudio
 import cv2
 from analyzeSquat import (
     getKneeAngle,
@@ -9,21 +8,22 @@ from analyzeSquat import (
     squatIsAtTheTop,
 )
 import multiprocessing
-from callLLM import callLLM
+from callLLM import callLLMs
 
 
 # need to delete all files in recordings folder before running the code
 def llmCall_worker(input_queue, output_queue):
     while True:
-        input_string = input_queue.get()
-        if input_string is None:  # Sentinel value to signal the end of the process
+        message_rep_Tuple = input_queue.get()
+        if message_rep_Tuple is None:  # Sentinel value to signal the end of the process
             break
-        callLLM(input_string)
+        callLLMs(message_rep_Tuple)
         print("LLM called")
-        output_queue.put(f"Processed: {input_string}")
+        output_queue.put(f"Processed: {message_rep_Tuple}")
 
 
 recordingsFolder = r"Recordings"
+missedDepthString = "The client missed depth on the squat"
 
 if __name__ == "__main__":
     try:
@@ -38,16 +38,18 @@ if __name__ == "__main__":
         llmCall_process.start()
 
         # Open the video stream from a file
-        # cap = cv2.VideoCapture(r"Data\Squat.mp4")
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(r"Data\Half Rep Squat.mp4")
+        # cap = cv2.VideoCapture(0)
         cv2.namedWindow("Example", cv2.WINDOW_NORMAL)
         cv2.resizeWindow("Example", 1280, 720)
-        squatWasBelowParallel = False
+        squatWasBelowParallelLastFrame = False
         onFirstFrame = True
         count = 0
         playVideo = 1
         squatRep = 0
         squatComingBackUp = False
+        squatWasAtTopLastFrame = False
+        squatComingDown = False
 
         while cap.isOpened():
             ret, frame = cap.read()
@@ -68,20 +70,35 @@ if __name__ == "__main__":
                 if onFirstFrame:
                     # get the initial state of the squat
                     onFirstFrame = False
-                    squatWasBelowParallel = squatIsBelowParallel(keypoints)
+                    squatWasBelowParallelLastFrame = squatIsBelowParallel(keypoints)
                 elif not onFirstFrame:
                     # check if the squat has successfully gone below parallel and is coming back up
-                    if (
-                        squatWasBelowParallel is True
+                    if squatComingDown and squatIsAtTheTop(keypoints) is True:
+                        # The squat did not go below parallel, tell the user that they missed depth
+                        squatComingDown = False
+                        tupleToSend = (missedDepthString, squatRep)
+                        input_queue.put(tupleToSend)
+
+                    if squatComingBackUp:
+                        squatComingDown = False
+                    elif (
+                        squatWasBelowParallelLastFrame is True
                         and squatIsBelowParallel(keypoints) is False
                     ):
                         squatComingBackUp = True
+                    # if the squat is above parallel and is not at the top
+                    elif (
+                        squatWasAtTopLastFrame is True
+                        and squatIsAtTheTop(keypoints) is False
+                    ):
+                        squatComingDown = True
                     elif squatComingBackUp and squatIsAtTheTop(keypoints) is True:
                         squatRep += 1
-                        input_queue.put(squatRep)
+                        # input_queue.put(squatRep)
                         squatComingBackUp = False
 
-                    squatWasBelowParallel = squatIsBelowParallel(keypoints)
+                    squatWasBelowParallelLastFrame = squatIsBelowParallel(keypoints)
+                    squatWasAtTopLastFrame = squatIsAtTheTop(keypoints)
 
                 plotKneeAngle(annotated_frame, keypoints, left_knee_angle, left=True)
                 plotKneeAngle(annotated_frame, keypoints, right_knee_angle, left=False)
