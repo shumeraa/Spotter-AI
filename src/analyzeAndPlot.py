@@ -1,7 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import cv2
-
 
 # Indices for right hip, knee, and ankle keypoints
 right_hip_index = 12

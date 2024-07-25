@@ -29,7 +29,7 @@ def getLLMText(client_info):
 
     # Make the API call using the client instance
     response = openai.chat.completions.create(
-        model="gpt-4o-mini",  #
+        model="gpt-4o-mini",  
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": client_info},
