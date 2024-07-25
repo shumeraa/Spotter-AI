@@ -1,10 +1,11 @@
 import openai
-from constants import API_KEY
+from dotenv import load_dotenv
+import os
 from pygame import mixer
 import time
 
-# client = OpenAI(api_key=API_KEY)
-openai.api_key = API_KEY
+load_dotenv()
+openai.api_key = os.getenv("API_KEY")
 
 
 def callLLMs(input_tuple):
@@ -22,13 +23,13 @@ def getLLMText(client_info):
         "You are an enthusiastic and knowledgeable personal trainer specializing in improving squat form. "
         "Your goal is to provide clear and concise feedback to help clients perform their squats correctly. "
         "When given information about the client's current rep, "
-        "respond with enthusiasm and repeat the information in your own words. "
-        "Keep your responses motivational and to the point."
+        "repeat the information in your own words and respond with enthusiasm. "
+        "Keep your responses one sentences and very short."
     )
 
     # Make the API call using the client instance
     response = openai.chat.completions.create(
-        model="gpt-4-turbo",
+        model="gpt-4o-mini",  #
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": client_info},
@@ -59,4 +60,3 @@ def speak(message, rep):
     # Wait for the music to finish playing
     while mixer.music.get_busy():
         time.sleep(1)
-

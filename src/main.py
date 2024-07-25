@@ -9,6 +9,7 @@ from analyzeSquat import (
 )
 import multiprocessing
 from callLLM import callLLMs
+import os
 
 
 # need to delete all files in recordings folder before running the code
@@ -22,11 +23,21 @@ def llmCall_worker(input_queue, output_queue):
         output_queue.put(f"Processed: {message_rep_Tuple}")
 
 
+def emptyFolder(folder):
+    for file in os.listdir(folder):
+        file_path = os.path.join(folder, file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(e)
+
+
 recordingsFolder = r"Recordings"
-missedDepthString = "The client missed depth on the squat"
 
 if __name__ == "__main__":
     try:
+        emptyFolder(recordingsFolder)
         # load a pretrained YOLOv8m model
         model = YOLO("yolov8m-pose.pt")
 
