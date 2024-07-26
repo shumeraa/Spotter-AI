@@ -107,18 +107,42 @@ def getKneeAngle(frame, keypoints, left):
     return knee_angle
 
 
-def plotKneeAngle(frame, keypoints, knee_angle, left):
+def plotLegAndKneeAngle(frame, keypoints, knee_angle, left):
     xPixels = 0
     if left:
         # Extract the coordinates for the left knee keypoint
         knee = np.squeeze(keypoints[:, left_knee_index, :2])
+        hip = np.squeeze(keypoints[:, left_hip_index, :2])
+        ankle = np.squeeze(keypoints[:, left_ankle_index, :2])
     else:
         # Extract the coordinates for the right knee keypoint
         knee = np.squeeze(keypoints[:, right_knee_index, :2])
+        hip = np.squeeze(keypoints[:, right_hip_index, :2])
+        ankle = np.squeeze(keypoints[:, right_ankle_index, :2])
         xPixels = 130
 
     # Convert normalized coordinates to pixel coordinates
-    knee_pixel = knee * np.array([frame.shape[1], frame.shape[0]]).astype(int)
+    knee_pixel = (
+        (knee * np.array([frame.shape[1], frame.shape[0]])).astype(int).tolist()
+    )
+    hip_pixel = (hip * np.array([frame.shape[1], frame.shape[0]])).astype(int).tolist()
+    ankle_pixel = (
+        (ankle * np.array([frame.shape[1], frame.shape[0]])).astype(int).tolist()
+    )
+
+    point_color = (0, 0, 0)  # Black for points
+    line_color = (0, 255, 0)  # Red for lines
+    point_radius = 7  # Radius for the points
+    line_thickness = 2  # Thickness for the lines
+
+    # Draw lines connecting knee to hip and knee to ankle
+    cv2.line(frame, knee_pixel, hip_pixel, line_color, line_thickness)
+    cv2.line(frame, knee_pixel, ankle_pixel, line_color, line_thickness)
+
+    # Draw points at the specified locations
+    cv2.circle(frame, knee_pixel, point_radius, point_color, -1)
+    cv2.circle(frame, hip_pixel, point_radius, point_color, -1)
+    cv2.circle(frame, ankle_pixel, point_radius, point_color, -1)
 
     # Display the calculated knee angle on the frame
     cv2.putText(

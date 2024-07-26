@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 from analyzeAndPlot import (
     getKneeAngle,
-    plotKneeAngle,
+    plotLegAndKneeAngle,
     squatIsBelowParallel,
     plotRepCount,
     squatIsAtTheTop,
@@ -37,7 +37,8 @@ class SquatAnalyzer:
     def process_frame(self, frame):
         # Use a model to detect keypoints in the frame and convert them to numpy array
         results = self.model(frame)
-        annotated_frame = results[0].plot()
+        # annotated_frame = results[0].plot()  # Plot the keypoints on the frame
+        annotated_frame = frame
         keypoints = results[0].keypoints.xyn.cpu().numpy()
 
         left_knee_angle = getKneeAngle(annotated_frame, keypoints, left=True)
@@ -47,8 +48,8 @@ class SquatAnalyzer:
             return annotated_frame, False
 
         self.analyze_squat(keypoints)
-        plotKneeAngle(annotated_frame, keypoints, left_knee_angle, left=True)
-        plotKneeAngle(annotated_frame, keypoints, right_knee_angle, left=False)
+        plotLegAndKneeAngle(annotated_frame, keypoints, left_knee_angle, left=True)
+        plotLegAndKneeAngle(annotated_frame, keypoints, right_knee_angle, left=False)
         plotRepCount(annotated_frame, self.squatRep)
 
         return annotated_frame, True
