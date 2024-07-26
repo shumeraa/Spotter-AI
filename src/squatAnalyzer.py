@@ -10,7 +10,7 @@ import multiprocessing
 from callLLM import callLLMs
 import os
 
-missedDepthString = "The client missed depth on the squat"
+missedDepthTuple = ("missedDepth", "The client missed depth on the squat")
 
 
 class SquatAnalyzer:
@@ -60,7 +60,9 @@ class SquatAnalyzer:
         else:
             if self.squatComingDown and squatIsAtTheTop(keypoints):
                 self.squatComingDown = False
-                self.input_queue.put((missedDepthString, self.squatRep))
+                self.input_queue.put(
+                    (missedDepthTuple[0], missedDepthTuple[1], self.squatRep)
+                )
 
             if self.squatComingBackUp:
                 self.squatComingDown = False

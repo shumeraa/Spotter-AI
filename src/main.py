@@ -20,7 +20,7 @@ if __name__ == "__main__":
                 break
 
             annotated_frame, _ = analyzer.process_frame(frame)
-            cv2.imshow("Example", annotated_frame)
+            cv2.imshow("Squat Video", annotated_frame)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
