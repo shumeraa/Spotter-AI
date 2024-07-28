@@ -1,15 +1,6 @@
 import numpy as np
 import cv2
 
-# Indices for right hip, knee, and ankle keypoints
-right_hip_index = 12
-right_knee_index = 14
-right_ankle_index = 16
-
-left_hip_index = 11
-left_knee_index = 13
-left_ankle_index = 15
-
 
 # Define a function to calculate the angle between three points
 def calculate_angle(p1, p2, p3):
@@ -27,28 +18,7 @@ def calculate_angle(p1, p2, p3):
     return angle_deg
 
 
-def squatIsBelowParallel(keypoints):
-    # Extract the coordinates for the right hip, knee, and ankle keypoints
-    right_hip = np.squeeze(keypoints[:, right_hip_index, :2])
-    right_knee = np.squeeze(keypoints[:, right_knee_index, :2])
-    right_ankle = np.squeeze(keypoints[:, right_ankle_index, :2])
-
-    if right_hip.shape != (2,) or right_knee.shape != (2,) or right_ankle.shape != (2,):
-        print("Some keypoints are missing, cannot calculate the angle")
-        return None
-
-    # Extract the coordinates for the left hip, knee, and ankle keypoints
-    left_hip = np.squeeze(keypoints[:, left_hip_index, :2])
-    left_knee = np.squeeze(keypoints[:, left_knee_index, :2])
-    left_ankle = np.squeeze(keypoints[:, left_ankle_index, :2])
-
-    if left_hip.shape != (2,) or left_knee.shape != (2,) or left_ankle.shape != (2,):
-        print("Some keypoints are missing, cannot calculate the angle")
-        return None
-
-    left_knee_angle = calculate_angle(right_hip, right_knee, right_ankle)
-    right_knee_angle = calculate_angle(right_hip, right_knee, right_ankle)
-
+def squatIsBelowParallel(left_knee_angle, right_knee_angle):
     if left_knee_angle < 110 and right_knee_angle < 110:
         # in lower portion of squat
         return True
@@ -57,27 +27,7 @@ def squatIsBelowParallel(keypoints):
         return False
 
 
-def squatIsAtTheTop(keypoints):
-    # Extract the coordinates for the right hip, knee, and ankle keypoints
-    right_hip = np.squeeze(keypoints[:, right_hip_index, :2])
-    right_knee = np.squeeze(keypoints[:, right_knee_index, :2])
-    right_ankle = np.squeeze(keypoints[:, right_ankle_index, :2])
-
-    if right_hip.shape != (2,) or right_knee.shape != (2,) or right_ankle.shape != (2,):
-        print("Some keypoints are missing, cannot calculate the angle")
-        return None
-
-    # Extract the coordinates for the left hip, knee, and ankle keypoints
-    left_hip = np.squeeze(keypoints[:, left_hip_index, :2])
-    left_knee = np.squeeze(keypoints[:, left_knee_index, :2])
-    left_ankle = np.squeeze(keypoints[:, left_ankle_index, :2])
-
-    if left_hip.shape != (2,) or left_knee.shape != (2,) or left_ankle.shape != (2,):
-        print("Some keypoints are missing, cannot calculate the angle")
-        return None
-
-    left_knee_angle = calculate_angle(right_hip, right_knee, right_ankle)
-    right_knee_angle = calculate_angle(left_hip, left_knee, left_ankle)
+def squatIsAtTheTop(left_knee_angle, right_knee_angle):
 
     if left_knee_angle > 170 and right_knee_angle > 170:
         # at the top of the squat
@@ -87,48 +37,12 @@ def squatIsAtTheTop(keypoints):
         return False
 
 
-def getKneeAngle(frame, keypoints, left):
-    # Extract the coordinates for the right hip, knee, and ankle keypoints
-    if left:
-        hip = np.squeeze(keypoints[:, left_hip_index, :2])
-        knee = np.squeeze(keypoints[:, left_knee_index, :2])
-        ankle = np.squeeze(keypoints[:, left_ankle_index, :2])
-    else:
-        hip = np.squeeze(keypoints[:, right_hip_index, :2])
-        knee = np.squeeze(keypoints[:, right_knee_index, :2])
-        ankle = np.squeeze(keypoints[:, right_ankle_index, :2])
-
-    if hip.shape != (2,) or knee.shape != (2,) or ankle.shape != (2,):
-        print("Some keypoints are missing, cannot calculate the angle")
-        return None
-
-    knee_angle = calculate_angle(hip, knee, ankle)
-    # print(f"Knee Angle: {knee_angle}")
-    return knee_angle
-
-
-def plotLegAndKneeAngle(frame, keypoints, knee_angle, left):
+def plotLegAndKneeAngle(frame, hip, ankle, knee, knee_angle, left):
     xPixels = 0
     if left:
-        # Extract the coordinates for the left knee keypoint
-        knee = np.squeeze(keypoints[:, left_knee_index, :2])
-        hip = np.squeeze(keypoints[:, left_hip_index, :2])
-        ankle = np.squeeze(keypoints[:, left_ankle_index, :2])
+        xPixels = 0
     else:
-        # Extract the coordinates for the right knee keypoint
-        knee = np.squeeze(keypoints[:, right_knee_index, :2])
-        hip = np.squeeze(keypoints[:, right_hip_index, :2])
-        ankle = np.squeeze(keypoints[:, right_ankle_index, :2])
         xPixels = 130
-
-    # Convert normalized coordinates to pixel coordinates
-    knee_pixel = (
-        (knee * np.array([frame.shape[1], frame.shape[0]])).astype(int).tolist()
-    )
-    hip_pixel = (hip * np.array([frame.shape[1], frame.shape[0]])).astype(int).tolist()
-    ankle_pixel = (
-        (ankle * np.array([frame.shape[1], frame.shape[0]])).astype(int).tolist()
-    )
 
     point_color = (0, 0, 0)  # Black for points
     line_color = (0, 255, 0)  # Red for lines
@@ -136,19 +50,19 @@ def plotLegAndKneeAngle(frame, keypoints, knee_angle, left):
     line_thickness = 2  # Thickness for the lines
 
     # Draw lines connecting knee to hip and knee to ankle
-    cv2.line(frame, knee_pixel, hip_pixel, line_color, line_thickness)
-    cv2.line(frame, knee_pixel, ankle_pixel, line_color, line_thickness)
+    cv2.line(frame, knee, hip, line_color, line_thickness)
+    cv2.line(frame, knee, ankle, line_color, line_thickness)
 
     # Draw points at the specified locations
-    cv2.circle(frame, knee_pixel, point_radius, point_color, -1)
-    cv2.circle(frame, hip_pixel, point_radius, point_color, -1)
-    cv2.circle(frame, ankle_pixel, point_radius, point_color, -1)
+    cv2.circle(frame, knee, point_radius, point_color, -1)
+    cv2.circle(frame, hip, point_radius, point_color, -1)
+    cv2.circle(frame, ankle, point_radius, point_color, -1)
 
     # Display the calculated knee angle on the frame
     cv2.putText(
         frame,
         f"Knee Angle: {knee_angle:.2f}",
-        (int(knee_pixel[0]) - xPixels, int(knee_pixel[1]) - 10),
+        (int(knee[0]) - xPixels, int(knee[1]) - 10),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.5,
         (0, 255, 0),
@@ -172,5 +86,24 @@ def plotRepCount(frame, repCount):
     )
 
 
-def checkKneeCollapse(left_knee_angle, right_knee_angle):
-    print(left_knee_angle, right_knee_angle)
+def checkKneeCollapse(hip, knee, ankle):
+    x_h, y_h = hip
+    x_k, y_k = knee
+    x_a, y_a = ankle
+
+    # Calculate the slope (m) and intercept (c) of the line from hip to ankle
+    if x_a - x_h == 0:  # To handle vertical line (undefined slope)
+        x_k_prime = x_h  # Expected knee X-coordinate is the same as hip and ankle
+    else:
+        m = (y_a - y_h) / (x_a - x_h)
+        c = y_h - m * x_h
+        # Calculate expected x_k (x_k')
+        x_k_prime = (y_k - c) / m
+
+    # Determine knee position relative to hip-ankle line
+    if x_k < x_k_prime:
+        print("Knee caving in (valgus)")
+    elif x_k > x_k_prime:
+        print("Knee flaring out (varus)")
+    else:
+        print("Knee aligned")

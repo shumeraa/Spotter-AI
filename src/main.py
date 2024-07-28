@@ -3,7 +3,7 @@ from squatAnalyzer import SquatAnalyzer
 
 if __name__ == "__main__":
     recordingsFolder = "Recordings"
-    videoPath = r"Data\Half Rep Squat.mp4"  # 0 for webcam
+    videoPath = r"Data\Squat.mp4"  # 0 for webcam
     analyzer = SquatAnalyzer(recordingsFolder)
 
     try:
