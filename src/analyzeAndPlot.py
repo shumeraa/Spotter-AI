@@ -170,3 +170,7 @@ def plotRepCount(frame, repCount):
         2,
         cv2.LINE_AA,
     )
+
+
+def checkKneeCollapse(left_knee_angle, right_knee_angle):
+    print(left_knee_angle, right_knee_angle)

@@ -5,6 +5,7 @@ from analyzeAndPlot import (
     squatIsBelowParallel,
     plotRepCount,
     squatIsAtTheTop,
+    checkKneeCollapse,
 )
 import multiprocessing
 from callLLM import callLLMs
@@ -43,6 +44,8 @@ class SquatAnalyzer:
 
         left_knee_angle = getKneeAngle(annotated_frame, keypoints, left=True)
         right_knee_angle = getKneeAngle(annotated_frame, keypoints, left=False)
+
+        checkKneeCollapse(left_knee_angle, right_knee_angle)
 
         if left_knee_angle is None or right_knee_angle is None:
             return annotated_frame, False
