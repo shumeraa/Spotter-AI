@@ -3,7 +3,7 @@ from squatAnalyzer import SquatAnalyzer
 
 if __name__ == "__main__":
     recordingsFolder = "Recordings"
-    videoPath = r"Data\Squat.mp4"  # 0 for webcam
+    videoPath = r"Data\KneeCave.mp4"  # 0 for webcam
     analyzer = SquatAnalyzer(recordingsFolder)
 
     try:
@@ -22,7 +22,7 @@ if __name__ == "__main__":
             annotated_frame, _ = analyzer.process_frame(frame)
             cv2.imshow("Squat Video", annotated_frame)
 
-            if cv2.waitKey(1) & 0xFF == ord("q"):
+            if cv2.waitKey(0) & 0xFF == ord("q"):
                 break
 
         cap.release()

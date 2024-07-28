@@ -70,9 +70,10 @@ class SquatAnalyzer:
 
         self.analyze_squat(keypoints)
         checkKneeCollapse(
-            self.left_hip,
+            self.right_hip,
+            self.right_knee,
+            self.right_ankle,  # just for right leg
             self.left_knee,
-            self.left_ankle,  # just for left leg
         )
         plotLegAndKneeAngle(
             frame,

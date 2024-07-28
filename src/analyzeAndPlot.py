@@ -86,24 +86,36 @@ def plotRepCount(frame, repCount):
     )
 
 
-def checkKneeCollapse(hip, knee, ankle):
-    x_h, y_h = hip
-    x_k, y_k = knee
-    x_a, y_a = ankle
+def checkKneeCollapse(hip, knee, ankle, opposite_knee, threshold=0):
+    # Unpack the coordinates
+    x1, y1 = hip
+    x2, y2 = ankle
+    xk, yk = knee
+    xk_other, yk_other = opposite_knee
 
-    # Calculate the slope (m) and intercept (c) of the line from hip to ankle
-    if x_a - x_h == 0:  # To handle vertical line (undefined slope)
-        x_k_prime = x_h  # Expected knee X-coordinate is the same as hip and ankle
-    else:
-        m = (y_a - y_h) / (x_a - x_h)
-        c = y_h - m * x_h
-        # Calculate expected x_k (x_k')
-        x_k_prime = (y_k - c) / m
+    # Calculate the slope (m) and y-intercept (b) of the line y = mx + b
+    if x2 - x1 != 0:
+        m = (y2 - y1) / (x2 - x1)
+        b = y1 - m * x1
 
-    # Determine knee position relative to hip-ankle line
-    if x_k < x_k_prime:
-        print("Knee caving in (valgus)")
-    elif x_k > x_k_prime:
-        print("Knee flaring out (varus)")
+        # Determine the "in" side based on other_knee
+        y_on_line_other = m * xk_other + b
+        in_side = "right" if yk_other > y_on_line_other else "left"
+
+        # Check if knee is on the "in" side
+        y_on_line_knee = m * xk + b
+        is_knee_in = (yk > y_on_line_knee and in_side == "right") or (
+            yk <= y_on_line_knee and in_side == "left"
+        )
     else:
-        print("Knee aligned")
+        m = None  # Line is vertical
+        b = x1  # x = b is the equation of the vertical line
+
+        # Determine the "in" side based on other_knee
+        in_side = "right" if xk_other > b else "left"
+
+        # Check if knee is on the "in" side
+        is_knee_in = (xk > b and in_side == "right") or (xk <= b and in_side == "left")
+
+    # MAKE IT RETURN SOMETHING
+    print(f"Caving = {is_knee_in}")
