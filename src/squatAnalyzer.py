@@ -6,6 +6,7 @@ from analyzeAndPlot import (
     plotRepCount,
     squatIsAtTheTop,
     checkKneeCollapse,
+    plotShoulderLine,
 )
 import multiprocessing
 from callLLM import callLLMs
@@ -13,6 +14,14 @@ import os
 import numpy as np
 
 missedDepthTuple = ("missedDepth", "The client missed depth on the squat")
+leftKneeCaveTuple = (
+    "rightKneeCave",
+    "The client's left knee is caving in on the squat",
+)
+rightKneeCaveTuple = (
+    "leftKneeCave",
+    "The client's right knee is caving in on the squat",
+)
 
 # Indices for right hip, knee, and ankle keypoints
 right_hip_index = 12
@@ -22,6 +31,9 @@ right_ankle_index = 16
 left_hip_index = 11
 left_knee_index = 13
 left_ankle_index = 15
+
+left_shouler_index = 5
+right_shoulder_index = 6
 
 
 class SquatAnalyzer:
@@ -35,6 +47,8 @@ class SquatAnalyzer:
         self.left_knee = None
         self.left_ankle = None
         self.left_knee_angle = None
+        self.leftKneeCollapseRep = None
+        self.rightKneeCollapseRep = None
         self.squatIsBelowParallel = None
         self.squatIsAtTheTop = None
         self.recordingsFolder = recordingsFolder
@@ -69,12 +83,27 @@ class SquatAnalyzer:
         self.calculateSquatStatus()
 
         self.analyze_squat(keypoints)
-        checkKneeCollapse(
+        if self.squatRep != self.rightKneeCollapseRep and checkKneeCollapse(
             self.right_hip,
             self.right_knee,
             self.right_ankle,  # just for right leg
             self.left_knee,
-        )
+        ):
+            self.rightKneeCollapseRep = self.squatRep
+            self.input_queue.put(
+                (rightKneeCaveTuple[0], rightKneeCaveTuple[1], self.squatRep)
+            )
+
+        if self.squatRep != self.leftKneeCollapseRep and checkKneeCollapse(
+            self.left_hip,
+            self.left_knee,
+            self.left_ankle,  # just for right leg
+            self.right_knee,
+        ):
+            self.leftKneeCollapseRep = self.squatRep
+            self.input_queue.put(
+                (leftKneeCaveTuple[0], leftKneeCaveTuple[1], self.squatRep)
+            )
         plotLegAndKneeAngle(
             frame,
             self.left_hip,
@@ -93,6 +122,7 @@ class SquatAnalyzer:
         )
 
         plotRepCount(frame, self.squatRep)
+        # self.calculateShoulderCoordinatesAndPlot(keypoints, frame)
 
         return frame, True
 
@@ -188,6 +218,26 @@ class SquatAnalyzer:
             self.left_knee_angle = calculate_angle(
                 self.left_ankle, self.left_knee, self.left_hip
             )
+
+    def calculateShoulderCoordinatesAndPlot(self, keypoints, frame):
+        left_shoulder_norm = np.squeeze(keypoints[:, left_shouler_index, :2])
+        right_shoulder_norm = np.squeeze(keypoints[:, right_shoulder_index, :2])
+
+        if left_shoulder_norm.shape != (2,) or right_shoulder_norm.shape != (2,):
+            print("Some keypoints are missing")
+        else:
+            left_shoulder = (
+                (left_shoulder_norm * np.array([frame.shape[1], frame.shape[0]]))
+                .astype(int)
+                .tolist()
+            )
+            right_shoulder = (
+                (right_shoulder_norm * np.array([frame.shape[1], frame.shape[0]]))
+                .astype(int)
+                .tolist()
+            )
+
+            plotShoulderLine(frame, left_shoulder, right_shoulder)
 
     def calculateSquatStatus(self):
         if self.left_knee_angle and self.right_knee_angle:

@@ -73,6 +73,24 @@ def plotLegAndKneeAngle(frame, hip, ankle, knee, knee_angle, left):
     return True
 
 
+def plotShoulderLine(frame, leftShoulder, rightShoulder):
+    x1, y1 = leftShoulder
+    x2, y2 = rightShoulder
+
+    if x2 - x1 == 0:
+        raise ValueError("The line is vertical, slope is undefined.")
+
+    slope = (y2 - y1) / (x2 - x1)
+    print(f"Slope is: {slope}")
+
+    line_color = (0, 255, 0)  # Red for lines
+    line_thickness = 2  # Thickness for the lines
+
+    # Draw lines connecting knee to hip and knee to ankle
+    cv2.line(frame, leftShoulder, rightShoulder, line_color, line_thickness)
+    return True
+
+
 def plotRepCount(frame, repCount):
     cv2.putText(
         frame,
@@ -117,5 +135,5 @@ def checkKneeCollapse(hip, knee, ankle, opposite_knee, threshold=0):
         # Check if knee is on the "in" side
         is_knee_in = (xk > b and in_side == "right") or (xk <= b and in_side == "left")
 
-    # MAKE IT RETURN SOMETHING
-    print(f"Caving = {is_knee_in}")
+    # print(f"Caving = {is_knee_in}")
+    return is_knee_in
