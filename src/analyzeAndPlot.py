@@ -38,6 +38,10 @@ def squatIsAtTheTop(left_knee_angle, right_knee_angle):
 
 
 def plotLegAndKneeAngle(frame, hip, ankle, knee, knee_angle, left):
+
+    if not hip or not ankle or not knee:
+        return False
+
     xPixels = 0
     if left:
         xPixels = 0
