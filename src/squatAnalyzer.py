@@ -83,22 +83,31 @@ class SquatAnalyzer:
         self.calculateSquatStatus()
 
         self.analyze_squat(keypoints)
-        if self.squatRep != self.rightKneeCollapseRep and checkKneeCollapse(
-            self.right_hip,
-            self.right_knee,
-            self.right_ankle,  # just for right leg
-            self.left_knee,
+
+        if (
+            self.squatIsBelowParallel
+            and self.squatRep != self.rightKneeCollapseRep
+            and checkKneeCollapse(
+                self.right_hip,
+                self.right_knee,
+                self.right_ankle,  # just for right leg
+                self.left_knee,
+            )
         ):
             self.rightKneeCollapseRep = self.squatRep
             self.input_queue.put(
                 (rightKneeCaveTuple[0], rightKneeCaveTuple[1], self.squatRep)
             )
 
-        if self.squatRep != self.leftKneeCollapseRep and checkKneeCollapse(
-            self.left_hip,
-            self.left_knee,
-            self.left_ankle,  # just for right leg
-            self.right_knee,
+        if (
+            self.squatIsBelowParallel
+            and self.squatRep != self.leftKneeCollapseRep
+            and checkKneeCollapse(
+                self.left_hip,
+                self.left_knee,
+                self.left_ankle,  # just for right leg
+                self.right_knee,
+            )
         ):
             self.leftKneeCollapseRep = self.squatRep
             self.input_queue.put(
