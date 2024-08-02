@@ -46,7 +46,7 @@ def plotLegAndKneeAngle(frame, hip, ankle, knee, knee_angle, left):
     if left:
         xPixels = 0
     else:
-        xPixels = 130
+        xPixels = 140
 
     point_color = (0, 0, 0)  # Black for points
     line_color = (0, 255, 0)  # Red for lines

@@ -23,6 +23,11 @@ rightKneeCaveTuple = (
     "The client's right knee is caving in on the squat",
 )
 
+goodRepTuple = (
+    "goodRep",
+    "The client performed a good squat rep and just completed rep {rep}.",
+)
+
 # Indices for right hip, knee, and ankle keypoints
 right_hip_index = 12
 right_knee_index = 14
@@ -47,8 +52,8 @@ class SquatAnalyzer:
         self.left_knee = None
         self.left_ankle = None
         self.left_knee_angle = None
-        self.leftKneeCollapseRep = None
-        self.rightKneeCollapseRep = None
+        # self.leftKneeCollapseRep = None
+        # self.rightKneeCollapseRep = None
         self.squatIsBelowParallel = None
         self.squatIsAtTheTop = None
         self.recordingsFolder = recordingsFolder
@@ -64,6 +69,7 @@ class SquatAnalyzer:
             target=llmCall_worker, args=(self.input_queue, self.output_queue)
         )
         self.llmCall_process.start()
+        self.llmCalledOnThisRep = False
 
     def emptyRecordingsFolder(self):
         for file in os.listdir(self.recordingsFolder):
@@ -86,7 +92,7 @@ class SquatAnalyzer:
 
         if (
             self.squatIsBelowParallel
-            and self.squatRep != self.rightKneeCollapseRep
+            and not self.llmCalledOnThisRep
             and checkKneeCollapse(
                 self.right_hip,
                 self.right_knee,
@@ -94,14 +100,14 @@ class SquatAnalyzer:
                 self.left_knee,
             )
         ):
-            self.rightKneeCollapseRep = self.squatRep
+            self.llmCalledOnThisRep = True
             self.input_queue.put(
                 (rightKneeCaveTuple[0], rightKneeCaveTuple[1], self.squatRep)
             )
 
         if (
             self.squatIsBelowParallel
-            and self.squatRep != self.leftKneeCollapseRep
+            and not self.llmCalledOnThisRep
             and checkKneeCollapse(
                 self.left_hip,
                 self.left_knee,
@@ -109,7 +115,7 @@ class SquatAnalyzer:
                 self.right_knee,
             )
         ):
-            self.leftKneeCollapseRep = self.squatRep
+            self.llmCalledOnThisRep = True
             self.input_queue.put(
                 (leftKneeCaveTuple[0], leftKneeCaveTuple[1], self.squatRep)
             )
@@ -142,9 +148,11 @@ class SquatAnalyzer:
         else:
             if self.squatComingDown and self.squatIsAtTheTop:
                 self.squatComingDown = False
-                self.input_queue.put(
-                    (missedDepthTuple[0], missedDepthTuple[1], self.squatRep)
-                )
+                if not self.llmCalledOnThisRep:
+                    self.llmCalledOnThisRep = True
+                    self.input_queue.put(
+                        (missedDepthTuple[0], missedDepthTuple[1], self.squatRep)
+                    )
 
             if self.squatComingBackUp:
                 self.squatComingDown = False
@@ -154,6 +162,16 @@ class SquatAnalyzer:
                 self.squatComingDown = True
             if self.squatComingBackUp and self.squatIsAtTheTop:
                 self.squatRep += 1
+                if not self.llmCalledOnThisRep:
+                    self.input_queue.put(
+                        (
+                            goodRepTuple[0],
+                            goodRepTuple[1].format(rep=self.squatRep),
+                            self.squatRep,
+                        )
+                        # (missedDepthTuple[0], missedDepthTuple[1], self.squatRep)
+                    )
+                self.llmCalledOnThisRep = False
                 self.squatComingBackUp = False
 
             self.squatWasBelowParallelLastFrame = self.squatIsBelowParallel
