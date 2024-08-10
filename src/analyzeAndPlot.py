@@ -63,16 +63,16 @@ def plotLegAndKneeAngle(frame, hip, ankle, knee, knee_angle, left):
     cv2.circle(frame, ankle, point_radius, point_color, -1)
 
     # Display the calculated knee angle on the frame
-    cv2.putText(
-        frame,
-        f"Knee Angle: {knee_angle:.2f}",
-        (int(knee[0]) - xPixels, int(knee[1]) - 10),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.5,
-        (0, 255, 0),
-        2,
-        cv2.LINE_AA,
-    )
+    # cv2.putText(
+    #     frame,
+    #     f"Knee Angle: {knee_angle:.2f}",
+    #     (int(knee[0]) - xPixels, int(knee[1]) - 10),
+    #     cv2.FONT_HERSHEY_SIMPLEX,
+    #     0.5,
+    #     (0, 255, 0),
+    #     2,
+    #     cv2.LINE_AA,
+    # )
     # print(f"Knee Angle: {knee_angle:.2f}")
     return True
 
@@ -99,10 +99,10 @@ def plotRepCount(frame, repCount):
     cv2.putText(
         frame,
         f"Rep Count: {repCount}",
-        (10, 50),  # Position in the top left corner
+        (500, 50),  # location
         cv2.FONT_HERSHEY_SIMPLEX,
-        1,  # Larger font size
-        (255, 0, 0),  # Black color
+        1.5,  # Larger font size
+        (0, 0, 255),  # color
         2,
         cv2.LINE_AA,
     )

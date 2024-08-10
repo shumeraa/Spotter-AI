@@ -91,8 +91,8 @@ class SquatAnalyzer:
         self.analyze_squat(keypoints)
 
         if (
-            self.squatIsBelowParallel
-            and not self.llmCalledOnThisRep
+            # self.squatIsBelowParallel and
+            not self.llmCalledOnThisRep
             and checkKneeCollapse(
                 self.right_hip,
                 self.right_knee,
@@ -106,8 +106,8 @@ class SquatAnalyzer:
             )
 
         if (
-            self.squatIsBelowParallel
-            and not self.llmCalledOnThisRep
+            # self.squatIsBelowParallel and
+            not self.llmCalledOnThisRep
             and checkKneeCollapse(
                 self.left_hip,
                 self.left_knee,
