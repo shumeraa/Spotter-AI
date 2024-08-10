@@ -1,5 +1,5 @@
 # How to Start:
-- Create a .env file in src and add your openAI API_KEY
+- Create a .env file in src and add your openAI api key as API_KEY
 - Create a Recordings folder and set it in main.py
 - Create a Data folder and add your squat video
 
