@@ -16,14 +16,24 @@ Spotter-AI currently monitors three key aspects of your squat: rep count, squat 
 - Create a Recordings folder and set it in main.py
 - Create a Data folder and add your squat video
 
-Create and activate your venv:
+1. **Create a Virtual Environment:**
+   ```bash
+   python -m venv .venv
+   ```
+2. **Activate the Virtual Environment:**
+    - On Windows:
+    ```bash
+    .venv\Scripts\activate
+    ```
+    - On Linux:
+    ```bash
+    source .venv/bin/activate
+    ```
+3. **Install the Required Packages:**
 
-```
-python -m venv .venv
-```
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-```
-.venv\Scripts\activate
-```
 
 And then run main.py!
