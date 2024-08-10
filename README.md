@@ -1,6 +1,11 @@
-![](https://github.com/shumeraa/Spotter-AI/blob/main/gifs/normalSquat.gif)
-![](https://github.com/shumeraa/Spotter-AI/blob/main/gifs/shortSquat.gif)
-![](https://github.com/shumeraa/Spotter-AI/blob/main/gifs/collapseSquat.gif)
+<div style="display: flex; gap: 10px;">
+  <img src="https://github.com/shumeraa/Spotter-AI/blob/main/gifs/normalSquat.gif" width="250" height="250"/>
+  <img src="https://github.com/shumeraa/Spotter-AI/blob/main/gifs/shortSquat.gif" width="250" height="250"/>
+  <img src="https://github.com/shumeraa/Spotter-AI/blob/main/gifs/collapseSquat.gif" width="250" height="250"/>
+</div>
+
+
+
 # Welcome to Spotter-AI!
 Spotter-AI is your personal trainer for real-time squat form feedback! Leveraging YOLOv8 for pose estimation, Spotter-AI assesses your squat technique and relays the data to GPT-4.0-mini. GPT crafts a clear, user-friendly message, which is then vocalized by OpenAI TTS, guiding you through your workout.
 
